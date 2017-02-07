@@ -19,6 +19,12 @@ def select_majority(a):
 	return mx
 
 
+def load(f):
+	r = pickle.load(open(f, 'rb'))
+	print(len(r.triggers))
+	return r
+
+
 class RSSTrigger:
 	def __init__(self, w, bias, action):
 		self.w = w
@@ -49,15 +55,18 @@ class RSS:
 	def get_action(self, i):
 		return self.action_space[i % len(self.action_space)]
 
+	def react(self, obs):
+		viable_actions = []
+		for tr in self.triggers:
+			if tr.is_triggered(obs):
+				viable_actions.append(tr.get_action())
+		return select_majority(viable_actions) if len(viable_actions) > 0 else self.get_random_action()
+
 	def play_episode(self):
 		r = 0
 		obs = self.first_obs_fn()
 		while True:
-			viable_actions = []
-			for tr in self.triggers:
-				if tr.is_triggered(obs):
-					viable_actions.append(tr.get_action())
-			action = select_majority(viable_actions) if len(viable_actions) > 0 else self.get_random_action()
+			action = self.react(obs)
 			obs, reward, done = self.step_fn(action)
 			r += reward
 			if done:
@@ -72,11 +81,7 @@ class RSS:
 		biases = []
 		while True:
 			biases.append(w.ravel().dot(obs.ravel()))
-			viable_actions = []
-			for tr in self.triggers:
-				if tr.is_triggered(obs):
-					viable_actions.append(tr.get_action())
-			action = select_majority(viable_actions) if len(viable_actions) > 0 else self.get_random_action()
+			action = self.react(obs)
 			obs, _, done = self.step_fn(action)
 			if done:
 				break
