@@ -88,7 +88,7 @@ class RSS:
 		biases.sort()
 		return biases[int(len(biases) * self.alpha)]
 
-	def train(self, backup_intervals=60*2, trig_search_repeats=100):
+	def train(self, backup_intervals=60*2, trig_search_repeats=100, model_file_name='model.pkl'):
 		last_backup_time = time.time()
 		while True:
 			cmr = self.get_current_mean_reward(self.cmr_repeats)
@@ -96,7 +96,7 @@ class RSS:
 			if time.time() > last_backup_time + backup_intervals:
 				last_backup_time = time.time()
 				print('Saving model file...')
-				pickle.dump(self, open('model.pkl', 'w'))
+				pickle.dump(self, open(model_file_name, 'w'))
 				print('Model saved.')
 			best_reward = cmr
 			best_trig = None
