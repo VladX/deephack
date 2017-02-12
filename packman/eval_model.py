@@ -1,7 +1,10 @@
 import rss
 import gym
+from gym import wrappers
+import sys
 
 env = gym.make('MsPacman-v0')
+env = wrappers.Monitor(env, '/tmp/experiment-1')
 
 def first_obs_fn():
 	return env.reset()
@@ -12,11 +15,12 @@ def step_fn(action):
 
 r = rss.load('model.pkl')
 
-obs = first_obs_fn()
-
-while True:
-	action = r.react(obs)
-	env.render()
-	obs, reward, done = step_fn(action)
-	if done:
-		obs = env.reset()
+for i_episode in range(100):
+	obs = first_obs_fn()
+	while True:
+		action = r.react(obs)
+		#env.render()
+		obs, reward, done = step_fn(action)
+		if done:
+			print(i_episode)
+			break
